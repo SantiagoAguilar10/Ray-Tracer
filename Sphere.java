@@ -1,3 +1,3 @@
-public class Sphere {
-    
+public class Sphere extends Object3D {
+
 }
