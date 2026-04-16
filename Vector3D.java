@@ -10,54 +10,49 @@ public class Vector3D {
     }
 
     // Getters
-    public double getX() {
-        return x;
-    }
-    
-    public double getY() {
-        return y;
-    }
-    
-    public double getZ() {
-        return z;
-    }
-
+    public double getX() { return x;}
+    public double getY() { return y;}
+    public double getZ() { return z;}
 
     // Setters
-    public void setX(double x) {
-        this.x = x;
-    }
-    
-    public void setY(double y) {
-        this.y = y;
-    }
+    public void setX(double x) { this.x = x;}
+    public void setY(double y) { this.y = y;}
+    public void setZ(double z) { this.z = z;}
 
-    public void setZ(double z) {
-        this.z = z;
+
+    public Vector3D add(Vector3D other) {
+        return new Vector3D(this.x + other.x, this.y + other.y, this.z + other.z);
     }
 
-    // Operations
-    /*
-    public Vector3D add
+    public Vector3D substract(Vector3D other) {
+        return new Vector3D(this.x - other.x, this.y - other.y, this.z - other.z);
+    }
 
-        thisx + other x etc.
+    public Vector3D scale(double scalar) {
+        return new Vector3D(this.x * scalar, this.y * scalar, this.z * scalar);
+    }
 
-    public Vector3D subtract
+    public double dotProduct(Vector3D other) {
+        return this.x * other.x + this.y * other.y + this.z * other.z;
+    }
 
-        thisx - other x etc.
+    public Vector3D crossProduct(Vector3D other) {
+        double crossX = this.y * other.z - this.z * other.y;
+        double crossY = this.z * other.x - this.x * other.z;
+        double crossZ = this.x * other.y - this.y * other.x;
+        return new Vector3D(crossX, crossY, crossZ);
+    }
 
-    public Vector3D scale
-
-        thisx * scalar etc.
-
-    public double dotProduct
-        thisx * other x + thisy * other y + thisz * other z
-
-    public Vector3D crossProduct
-
-        thisy * other z - thisz * other y, thisz * other x - thisx * other z, thisx * other y - thisy * other x
-
-    */
-        
     // Normalize & Magnitude  
+    public double magnitude() {
+        return Math.sqrt(x * x + y * y + z * z);
+    }
+
+    public Vector3D normalize() {
+        double mag = magnitude();
+        if (mag == 0) {
+            throw new ArithmeticException("Cannot normalize a zero vector");
+        }
+        return new Vector3D(x / mag, y / mag, z / mag);
+    }
 }

@@ -1,4 +1,4 @@
-public class Object3D {
+abstract class Object3D {
     // Abstract class for 3D objects in the scene
 
     /**
