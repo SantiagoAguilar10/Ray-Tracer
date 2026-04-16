@@ -36,5 +36,28 @@ public class Vector3D {
         this.z = z;
     }
 
-    
+    // Operations
+    /*
+    public Vector3D add
+
+        thisx + other x etc.
+
+    public Vector3D subtract
+
+        thisx - other x etc.
+
+    public Vector3D scale
+
+        thisx * scalar etc.
+
+    public double dotProduct
+        thisx * other x + thisy * other y + thisz * other z
+
+    public Vector3D crossProduct
+
+        thisy * other z - thisz * other y, thisz * other x - thisx * other z, thisx * other y - thisy * other x
+
+    */
+        
+    // Normalize & Magnitude  
 }
