@@ -25,7 +25,7 @@ public class Vector3D {
         return new Vector3D(this.x + other.x, this.y + other.y, this.z + other.z);
     }
 
-    public Vector3D substract(Vector3D other) {
+    public Vector3D subtract(Vector3D other) {
         return new Vector3D(this.x - other.x, this.y - other.y, this.z - other.z);
     }
 

@@ -1,6 +1,8 @@
 public class Camera {
     // Generate Rays
 
+    
+
     /**
      * Content:
      * 

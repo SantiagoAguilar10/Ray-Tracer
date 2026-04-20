@@ -1,12 +1,23 @@
 public class Ray {
-    /*
 
-    origin vector3D
-    direction vector3D
-    
-    */
+    private Vector3D origin;
+    private Vector3D direction;
 
-    // Function to obtain a point along the ray at a given distance t
+    public Ray(Vector3D origin, Vector3D direction) {
+        this.origin = origin;
+        this.direction = direction;
+    }
 
-    // P(t) = origin + t * direction
+    public Vector3D getOrigin() { return origin;}
+    public Vector3D getDirection() { return direction;}
+
+    public void setOrigin(Vector3D origin) { this.origin = origin;}
+    public void setDirection(Vector3D direction) { this.direction = direction;}
+
+
+    public Vector3D pointAlongRay(double t) {
+        return origin.add(direction.scale(t));
+    }
+
+
 }
