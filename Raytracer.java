@@ -23,7 +23,7 @@ public class Raytracer {
 
         if (hit == null) return background;
         return hit.getObject().getColor();
-        // Shade the hit point based on the color & lighting (the latter is not implemented yet)
+            
     }    
 
 }

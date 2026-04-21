@@ -6,8 +6,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        int width = 800;
-        int height = 600;
+        int width = 1200;
+        int height = 900;
 
         // Camera
         Camera camera = new Camera(new Vector3D(0, 0, 0), 60,  (double)width / height);
@@ -15,7 +15,8 @@ public class Main {
 
         // Scene
         Scene scene = new Scene();
-        scene.addObject(new Sphere(new Vector3D(0, 0, -5), 2, new Vector3D(1, 0, 0)));
+        scene.addObject(new Sphere(new Vector3D(0, 0, -5), 1, new Vector3D(1, 0, 0)));
+        scene.addObject(new Sphere(new Vector3D(5,0, -10), 1 ,new Vector3D(0, 0, 1)));
 
         // Raytracer
         Raytracer raytracer = new Raytracer(scene, camera);
