@@ -19,6 +19,8 @@ public class Intersection {
     public Vector3D getPoint() { return point;}
     public Vector3D getNormal() { return normal;}
     public Object3D getObject() { return object;}
+
+    public Vector3D getColor() { return object.getColor();}
     
     // Setters
     public void setT(double t) { this.t = t;}

@@ -1,3 +1,5 @@
+import java.util.Vector;
+
 public class Camera {
 
     private Vector3D position;
@@ -14,6 +16,14 @@ public class Camera {
     public Vector3D getPosition() { return position;}
     public double getAspectRatio() { return aspectRatio;}
     public double getFov() { return fov;}
+
+    public Vector3D getBackgroundColor() {
+        return new Vector3D(0, 0, 0); // Default to black background
+    }
+
+    public Vector3D setBackgroundColor(Vector3D color) {
+        return color; // Placeholder for setting background color
+    }
 
     // Setters
     public void setPosition(Vector3D position) { this.position = position;}

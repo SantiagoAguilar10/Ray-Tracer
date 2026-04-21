@@ -21,7 +21,7 @@ public class Scene {
             if (intersection != null) {
                 double t = intersection.getT();
 
-                // Evita intersecciones detrás o muy cercanas (ruido numérico)
+                // Prevents Intersections Behind or Very Close (Numerical Noise)
                 if (t > 1e-6 && t < minDistance) {
                     minDistance = t;
                     closestIntersection = intersection;

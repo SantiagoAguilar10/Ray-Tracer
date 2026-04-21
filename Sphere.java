@@ -2,7 +2,7 @@ public class Sphere extends Object3D {
 
     private double radius;
 
-    public Sphere(Vector3D position, Vector3D color, double radius) {
+    public Sphere(Vector3D position, double radius,Vector3D color) {
         super(position, color);
         this.radius = radius;
     }
