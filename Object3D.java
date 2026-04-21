@@ -17,4 +17,3 @@ public abstract class Object3D {
     public abstract Intersection intersect(Ray ray);
 
 }   
-

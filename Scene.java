@@ -5,17 +5,11 @@ public class Scene {
 
     private List<Object3D> objects;
 
-    public Scene() {
-        objects = new ArrayList<>();
-    }
+    public Scene() { objects = new ArrayList<>();}
 
-    public void addObject(Object3D object) {
-        objects.add(object);
-    }
+    public void addObject(Object3D object) { objects.add(object);}
 
-    public List<Object3D> getObjects() {
-        return objects;
-    }
+    public List<Object3D> getObjects() { return objects;}
 
     public Intersection intersect(Ray ray) {
         Intersection closestIntersection = null;

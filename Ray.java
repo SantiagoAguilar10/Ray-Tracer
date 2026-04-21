@@ -18,6 +18,4 @@ public class Ray {
     public Vector3D pointAlongRay(double t) {
         return origin.add(direction.scale(t));
     }
-
-
 }

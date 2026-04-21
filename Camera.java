@@ -1,15 +1,4 @@
 public class Camera {
-    // Generate Rays
-
-    
-
-    /**
-     * Content:
-     * 
-     * Position
-     * Field of View
-     * Aspect Ratio / Image Size
-     */
 
     private Vector3D position;
     private double fov; // in degrees
