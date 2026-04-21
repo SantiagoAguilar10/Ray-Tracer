@@ -1,18 +1,40 @@
 import java.util.ArrayList;
+import java.util.List;
 
 public class Scene {
-    // Container of all objects, lights, and camera in the scene
 
-    private ArrayList<Object3D> objects;
-    private Camera camera;
+    private List<Object3D> objects;
 
     public Scene() {
-        this.objects = new ArrayList<>();
-        this.camera = null;
+        objects = new ArrayList<>();
     }
 
     public void addObject(Object3D object) {
         objects.add(object);
     }
-    
+
+    public List<Object3D> getObjects() {
+        return objects;
+    }
+
+    public Intersection intersect(Ray ray) {
+        Intersection closestIntersection = null;
+        double minDistance = Double.POSITIVE_INFINITY;
+
+        for (Object3D object : objects) {
+            Intersection intersection = object.intersect(ray);
+
+            if (intersection != null) {
+                double t = intersection.getT();
+
+                // Evita intersecciones detrás o muy cercanas (ruido numérico)
+                if (t > 1e-6 && t < minDistance) {
+                    minDistance = t;
+                    closestIntersection = intersection;
+                }
+            }
+        }
+
+        return closestIntersection;
+    }
 }

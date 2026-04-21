@@ -12,7 +12,7 @@ public class Ray {
     public Vector3D getDirection() { return direction;}
 
     public void setOrigin(Vector3D origin) { this.origin = origin;}
-    public void setDirection(Vector3D direction) { this.direction = direction;}
+    public void setDirection(Vector3D direction) { this.direction = direction.normalize();}
 
 
     public Vector3D pointAlongRay(double t) {
