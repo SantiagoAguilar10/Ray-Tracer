@@ -9,18 +9,18 @@ public class Main {
         int width = 800;
         int height = 600;
 
-        // Cámara
+        // Camera
         Camera camera = new Camera(new Vector3D(0, 0, 0), 60,  (double)width / height);
         camera.setBackgroundColor(new Vector3D(0, 0, 0));
 
-        // Escena
+        // Scene
         Scene scene = new Scene();
         scene.addObject(new Sphere(new Vector3D(0, 0, -5), 2, new Vector3D(1, 0, 0)));
 
         // Raytracer
         Raytracer raytracer = new Raytracer(scene, camera);
 
-        // Imagen
+        // Image
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
         // Render
@@ -30,7 +30,7 @@ public class Main {
                 Ray ray = camera.generateRay(x, y, width, height);
                 Vector3D color = raytracer.traceRay(ray);
 
-                // Convertir de [0,1] a [0,255]
+                // Convert color to RGB
                 int r = (int)(255 * color.getX());
                 int g = (int)(255 * color.getY());
                 int b = (int)(255 * color.getZ());
@@ -41,7 +41,7 @@ public class Main {
             }
         }
 
-        // Guardar imagen
+        // Save Image
         ImageIO.write(image, "png", new File("output.png"));
 
         System.out.println("Imagen generada: output.png");

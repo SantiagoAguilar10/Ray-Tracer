@@ -2,7 +2,7 @@ public class Raytracer {
 
     private Scene scene;
     private Camera camera;
-    private Vector3D background = new Vector3D(1, 1, 1); // Color de fondo (blanco)
+    private Vector3D background = new Vector3D(1, 1, 1); // Bg Color (white)
 
     public Raytracer(Scene scene, Camera camera) {
         this.scene = scene;
@@ -23,7 +23,7 @@ public class Raytracer {
 
         if (hit == null) return background;
         return hit.getObject().getColor();
-        // Shade the hit point based on the material(color) & lighting
+        // Shade the hit point based on the color & lighting (the latter is not implemented yet)
     }    
 
 }

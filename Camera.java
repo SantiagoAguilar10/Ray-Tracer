@@ -39,7 +39,7 @@ public class Camera {
         double screenY = (1 - 2 * ndcY) * Math.tan(Math.toRadians(fov / 2));
 
         // Create a ray from the camera position through the pixel on the screen
-        Vector3D rayDirection = new Vector3D(screenX, screenY, -1).normalize(); // Assuming the camera looks towards negative Z
+        Vector3D rayDirection = new Vector3D(screenX, screenY, -1).normalize(); // The camera looks towards negative Z
         return new Ray(position, rayDirection);
     }
 
