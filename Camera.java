@@ -1,5 +1,3 @@
-import java.util.Vector;
-
 public class Camera {
 
     private Vector3D position;

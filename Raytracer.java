@@ -9,6 +9,9 @@ public class Raytracer {
         this.camera = camera;
     }
 
+    public Camera getCamera() { return camera;}
+    public Scene getScene() { return scene;}
+
     public Vector3D shade(Intersection hit) {
         return hit.getObject().getColor();
     }
