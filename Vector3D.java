@@ -5,9 +5,9 @@ public class Vector3D {
 
     //Constructor
     public Vector3D(double x, double y, double z) {
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        setX(x);
+        setY(y);
+        setZ(z);
     }
 
     // Getters
@@ -25,7 +25,7 @@ public class Vector3D {
         return new Vector3D(this.x + other.x, this.y + other.y, this.z + other.z);
     }
 
-    public Vector3D subtract(Vector3D other) {
+    public Vector3D substract(Vector3D other) {
         return new Vector3D(this.x - other.x, this.y - other.y, this.z - other.z);
     }
 

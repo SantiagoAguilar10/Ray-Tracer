@@ -16,7 +16,7 @@ public class Camera {
     public double getFov() { return fov;}
 
     public Vector3D getBackgroundColor() {
-        return new Vector3D(0, 0, 0); // Default to black background
+        return new Vector3D(0, 0, 0); // Default to white background
     }
 
     public Vector3D setBackgroundColor(Vector3D color) {
@@ -31,10 +31,15 @@ public class Camera {
 
     public Ray generateRay(double pixelX, double pixelY, int imageWidth, int imageHeight) {
         // Convert pixel coordinates to normalized device coordinates (NDC)
+        // NDC coordinates range from -1 to 1, where (0,0) is the center of the image
+        // We also need to account for the aspect ratio and field of view to get the correct ray direction
+
         double ndcX = (pixelX + 0.5) / imageWidth; // Center of the pixel
         double ndcY = (pixelY + 0.5) / imageHeight;
 
         // Convert NDC to screen space coordinates
+        // The screen space coordinates will be in the range of [-1, 1] for both x and y
+
         double screenX = (2 * ndcX - 1) * aspectRatio * Math.tan(Math.toRadians(fov / 2));
         double screenY = (1 - 2 * ndcY) * Math.tan(Math.toRadians(fov / 2));
 

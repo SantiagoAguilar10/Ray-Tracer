@@ -12,11 +12,12 @@ public class Sphere extends Object3D {
 
     @Override
     public Intersection intersect(Ray ray) {
+        
         Vector3D O = ray.getOrigin();
         Vector3D D = ray.getDirection();
         Vector3D C = getPosition();
 
-        Vector3D OC = O.subtract(C);
+        Vector3D OC = O.substract(C);
 
         double a = D.dotProduct(D);
         double b = 2 * D.dotProduct(OC);
@@ -35,7 +36,7 @@ public class Sphere extends Object3D {
             if (t < 0) return null; // Both intersections are behind the ray
 
             Vector3D point = ray.pointAlongRay(t);
-            Vector3D normal = point.subtract(C).normalize();
+            Vector3D normal = point.substract(C).normalize();
 
             return new Intersection(t, point, normal, this);
         }
