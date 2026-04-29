@@ -28,7 +28,18 @@ public class Camera {
     public void setFov(double fov) { this.fov = fov;}
     public void setAspectRatio(double aspectRatio) { this.aspectRatio = aspectRatio;}
 
-
+    /**
+     * Generates a ray from the camera through the specified pixel on the image plane.
+     * The pixel coordinates (pixelX, pixelY) are in the range [0, imageWidth-1] and [0, imageHeight-1] respectively.
+     * The method converts these pixel coordinates to normalized device coordinates, then to screen space coordinates,
+     * and finally creates a ray that originates from the camera position and points in the direction of the pixel on the screen.
+     * 
+     * @param pixelX    
+     * @param pixelY    
+     * @param imageWidth    
+     * @param imageHeight   
+     * @return
+     */
     public Ray generateRay(double pixelX, double pixelY, int imageWidth, int imageHeight) {
         // Convert pixel coordinates to normalized device coordinates (NDC)
         // NDC coordinates range from -1 to 1, where (0,0) is the center of the image

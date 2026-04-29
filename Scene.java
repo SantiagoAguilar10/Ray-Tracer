@@ -12,7 +12,7 @@ public class Scene {
     public List<Object3D> getObjects() { return objects;}
 
     private final double nearplane = 1e-6;
-    private double farplane = 1000.0;
+    private final double farplane = 1000.0;
 
     public Intersection intersect(Ray ray) {
         
@@ -25,6 +25,7 @@ public class Scene {
             if (intersection != null) {
                 double t = intersection.getT();
 
+                // Clipping
                 // Prevents Intersections Behind or Very Close (Numerical Noise)
                 if (t > nearplane && t < farplane && t < minDistance) {
                     minDistance = t;
