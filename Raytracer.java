@@ -1,4 +1,5 @@
 import java.io.File;
+import java.util.List;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
@@ -38,14 +39,23 @@ public class Raytracer {
         int height = 900;
 
         // Camera
-        Camera camera = new Camera(new Vector3D(0, 0, 0), 60,  (double)width / height);
+        Camera camera = new Camera(new Vector3D(0, 0.3, 1.0), 60,  (double)width / height);
         camera.setBackgroundColor(new Vector3D(0, 0, 0));
 
         // Scene
         Scene scene = new Scene();
+
+        /*
         scene.addObject(new Sphere(new Vector3D(0, 0, -5), 1, new Vector3D(1, 0, 0)));
         scene.addObject(new Sphere(new Vector3D(4,0, -10), 1 ,new Vector3D(0, 0, 1)));
         scene.addObject(new Triangle(new Vector3D(-2, -1, -4), new Vector3D(-1, 1, -4), new Vector3D(-3, 1, -4), new Vector3D(0, 1, 0)));
+        */
+
+        List<Triangle> tris = OBJReader.load("CottonCandy.obj", new Vector3D(0.7, 0.7, 0.7));
+        OBJReader.printBounds(tris);
+        for (Triangle t : tris) {
+            scene.addObject(t);
+        }
 
         // Raytracer
         Raytracer raytracer = new Raytracer(scene, camera);

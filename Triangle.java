@@ -1,3 +1,5 @@
+import java.util.List;
+
 public class Triangle extends Object3D {
 
     private Vector3D v0, v1, v2;
@@ -8,6 +10,10 @@ public class Triangle extends Object3D {
         this.v0 = v0;
         this.v1 = v1;
         this.v2 = v2;
+    }
+
+    public List<Vector3D> getVertices() {
+        return List.of(v0, v1, v2);
     }
 
     @Override
