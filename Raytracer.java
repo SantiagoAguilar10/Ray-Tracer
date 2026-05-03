@@ -72,11 +72,11 @@ public class Raytracer {
         scene.addObject(new Sphere(new Vector3D(4,0, -10), 1 ,new Vector3D(0, 0, 1)));
         scene.addObject(new Triangle(new Vector3D(-2, -1, -4), new Vector3D(-1, 1, -4), new Vector3D(-3, 1, -4), new Vector3D(0, 1, 0)));
         
-        // Placing the light above of the model, in front of the camera
+        // Placing the light above of the model, in front of the camera.
         scene.addLight(new PointLight(
-            new Vector3D(0, 15, 10),  // Position
-            new Vector3D(1.0, 1.0, 1.0),  // White light
-            1.0                            // Full intensity
+            new Vector3D(0, 15, 10),  // Position.
+            new Vector3D(1.0, 1.0, 1.0),  // White light.
+            1.0                            // Full intensity.
         ));
 
         List<Triangle> tris = OBJReader.load("CottonCandy.obj", new Vector3D(1, 0.5, 1));

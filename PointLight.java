@@ -29,18 +29,18 @@ public class PointLight {
      */
     public Vector3D shade(Vector3D hitPoint, Vector3D normal, Vector3D objectColor, double ambientLight) {
 
-        // Direction from the hit point to the light source
+        // Direction from the hit point to the light source.
         Vector3D toLight = position.substract(hitPoint).normalize();
 
         // Lambertian diffuse: how much the surface faces the light
-        // dot product of the normal and light direction, clamped to [0, 1]
+        // dot product of the normal and light direction, clamped to [0, 1].
         double diffuse = Math.max(0.0, normal.dotProduct(toLight));
 
-        // Combine ambient + diffuse, scaled by light intensity
+        // Combine ambient + diffuse, scaled by light intensity.
         double shade = ambientLight + (1.0 - ambientLight) * diffuse * intensity;
         shade = Math.min(shade, 1.0); // Clamp to 1.0
 
-        // Multiply the object's base color by the shade factor and light color
+        // Multiply the object's base color by the shade factor and light color.
         return new Vector3D(
             objectColor.getX() * shade * color.getX(),
             objectColor.getY() * shade * color.getY(),
