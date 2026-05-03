@@ -7,7 +7,7 @@ public class Raytracer {
 
     private Scene scene;
     private Camera camera;
-    private Vector3D background = new Vector3D(1, 1, 1); // Bg Color (white)
+    private Vector3D background = new Vector3D(0, 0, 0); // Bg Color (white)
 
     public Raytracer(Scene scene, Camera camera) {
         this.scene = scene;
@@ -18,7 +18,29 @@ public class Raytracer {
     public Scene getScene() { return scene;}
 
     public Vector3D shade(Intersection hit) {
-        return hit.getObject().getColor();
+        Vector3D color = new Vector3D(0, 0, 0);
+        Vector3D objectColor = hit.getObject().getColor();
+        Vector3D normal      = hit.getNormal();
+        Vector3D hitPoint    = hit.getPoint();
+
+        double ambientLight = 0.15; // Tweak this (0.0 = pitch black shadows, 1.0 = no shading)
+
+        for (PointLight light : scene.getLights()) {
+            Vector3D contribution = light.shade(hitPoint, normal, objectColor, ambientLight);
+            // Accumulate contributions from all lights
+            color = new Vector3D(
+                color.getX() + contribution.getX(),
+                color.getY() + contribution.getY(),
+                color.getZ() + contribution.getZ()
+            );
+        }
+
+        // Clamp final color to [0, 1]
+        return new Vector3D(
+            Math.min(color.getX(), 1.0),
+            Math.min(color.getY(), 1.0),
+            Math.min(color.getZ(), 1.0)
+        );
     }
 
     public Vector3D traceRay(Ray ray) {
@@ -27,7 +49,7 @@ public class Raytracer {
         Intersection hit = scene.intersect(ray);
 
         if (hit == null) return background;
-        return hit.getObject().getColor(); 
+        return shade(hit); 
     }  
     
 
@@ -50,8 +72,14 @@ public class Raytracer {
         scene.addObject(new Sphere(new Vector3D(4,0, -10), 1 ,new Vector3D(0, 0, 1)));
         scene.addObject(new Triangle(new Vector3D(-2, -1, -4), new Vector3D(-1, 1, -4), new Vector3D(-3, 1, -4), new Vector3D(0, 1, 0)));
         
+        // Placing the light above of the model, in front of the camera
+        scene.addLight(new PointLight(
+            new Vector3D(0, 15, 10),  // Position
+            new Vector3D(1.0, 1.0, 1.0),  // White light
+            1.0                            // Full intensity
+        ));
 
-        List<Triangle> tris = OBJReader.load("CottonCandy.obj", new Vector3D(0.7, 0.7, 0.7));
+        List<Triangle> tris = OBJReader.load("CottonCandy.obj", new Vector3D(1, 0.5, 1));
         OBJReader.printBounds(tris);
         for (Triangle t : tris) {
             scene.addObject(t);
