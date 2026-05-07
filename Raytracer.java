@@ -25,7 +25,7 @@ public class Raytracer {
 
         double ambientLight = 0.15; // Tweak this (0.0 = pitch black shadows, 1.0 = no shading)
 
-        for (PointLight light : scene.getLights()) {
+        for (Light light : scene.getLights()) {
             Vector3D contribution = light.shade(hitPoint, normal, objectColor, ambientLight);
             // Accumulate contributions from all lights
             color = new Vector3D(
@@ -61,7 +61,7 @@ public class Raytracer {
         int height = 900;
 
         // Camera
-        Camera camera = new Camera(new Vector3D(0, 0.3, 1.0), 60,  (double)width / height);
+        Camera camera = new Camera(new Vector3D(0, 0.3, 2), 60,  (double)width / height);
         camera.setBackgroundColor(new Vector3D(0, 0, 0));
 
         // Scene
@@ -74,10 +74,16 @@ public class Raytracer {
         
         // Placing the light above of the model, in front of the camera.
         scene.addLight(new PointLight(
-            new Vector3D(0, 15, 10),  // Position.
+            new Vector3D(0, 0.3, 1.5),  // Position.
             new Vector3D(1.0, 1.0, 1.0),  // White light.
             1.0                            // Full intensity.
         ));
+
+        List<Triangle> tea = OBJReader.load("teapot.obj", new Vector3D(1, 0.5, 1));
+        OBJReader.printBounds(tea);
+        for (Triangle t : tea) {
+            scene.addObject(t);
+        }
 
         List<Triangle> tris = OBJReader.load("CottonCandy.obj", new Vector3D(1, 0.5, 1));
         OBJReader.printBounds(tris);

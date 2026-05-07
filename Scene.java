@@ -4,7 +4,7 @@ import java.util.List;
 public class Scene {
 
     private List<Object3D> objects;
-    private List<PointLight> lights;
+    private List<Light> lights = new ArrayList<>();
 
     public Scene() {
         objects = new ArrayList<>();
@@ -15,7 +15,7 @@ public class Scene {
     public void addLight(PointLight light)  { lights.add(light); }
 
     public List<Object3D> getObjects() { return objects; }
-    public List<PointLight> getLights() { return lights; }
+    public List<Light> getLights() { return lights; }
 
     private final double nearplane = 1e-6;
     private final double farplane  = 1000.0;

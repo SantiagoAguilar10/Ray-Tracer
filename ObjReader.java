@@ -96,5 +96,5 @@ public class OBJReader {
         System.out.println("  Y: " + minY + " to " + maxY);
         System.out.println("  Z: " + minZ + " to " + maxZ);
         System.out.println("  Center: (" + (minX+maxX)/2 + ", " + (minY+maxY)/2 + ", " + (minZ+maxZ)/2 + ")");
-        }
+    }
 }
