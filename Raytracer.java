@@ -20,14 +20,15 @@ public class Raytracer {
     public Vector3D shade(Intersection hit) {
         Vector3D color = new Vector3D(0, 0, 0);
         Vector3D objectColor = hit.getObject().getColor();
-        Vector3D normal      = hit.getNormal();
-        Vector3D hitPoint    = hit.getPoint();
+        Vector3D normal = hit.getNormal();
+        Vector3D hitPoint = hit.getPoint();
+        double   shininess = hit.getObject().getShininess();
+        Vector3D cameraPos = camera.getPosition();
 
-        double ambientLight = 0.15; // Tweak this (0.0 = pitch black shadows, 1.0 = no shading)
+        double ambientLight = 0.15;
 
         for (Light light : scene.getLights()) {
-            Vector3D contribution = light.shade(hitPoint, normal, objectColor, ambientLight);
-            // Accumulate contributions from all lights
+            Vector3D contribution = light.shade(hitPoint, normal, objectColor, ambientLight, cameraPos, shininess);
             color = new Vector3D(
                 color.getX() + contribution.getX(),
                 color.getY() + contribution.getY(),
@@ -35,7 +36,6 @@ public class Raytracer {
             );
         }
 
-        // Clamp final color to [0, 1]
         return new Vector3D(
             Math.min(color.getX(), 1.0),
             Math.min(color.getY(), 1.0),
@@ -68,9 +68,8 @@ public class Raytracer {
         Scene scene = new Scene();
 
         
-        scene.addObject(new Sphere(new Vector3D(0, 0, -5), 1, new Vector3D(1, 0, 0)));
-        scene.addObject(new Sphere(new Vector3D(4,0, -10), 1 ,new Vector3D(0, 0, 1)));
-        scene.addObject(new Triangle(new Vector3D(-2, -1, -4), new Vector3D(-1, 1, -4), new Vector3D(-3, 1, -4), new Vector3D(0, 1, 0)));
+        scene.addObject(new Sphere(new Vector3D(-5, 4, -7), 1, new Vector3D(1, 0, 0)));
+        scene.addObject(new Sphere(new Vector3D(5,3, -10), 1 ,new Vector3D(0, 0, 1)));
         
         // Placing the light above of the model, in front of the camera.
         scene.addLight(new PointLight(

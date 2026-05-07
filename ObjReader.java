@@ -3,62 +3,73 @@ import java.util.*;
 
 public class OBJReader {
 
-    /**
-     * Loads a 3D model from an OBJ file at the given path and reads its vertices and faces
-     * to create geometry using triangles.
-     * Supports face formats: v, v/vt, v/vt/vn, v//vn
-     * Supports triangles and quads (quads are fan-triangulated).
-     *
-     * @param path  Path to the .obj file
-     * @param color Color to apply to all triangles
-     * @return List of Triangle objects representing the model's geometry
-     */
     public static List<Triangle> load(String path, Vector3D color) {
 
         List<Vector3D> vertices = new ArrayList<>();
+        List<Vector3D> normals  = new ArrayList<>(); // vn lines
         List<Triangle> triangles = new ArrayList<>();
 
         try (BufferedReader br = new BufferedReader(new FileReader(path))) {
 
             String line;
-
             while ((line = br.readLine()) != null) {
-
                 line = line.trim();
-
-                // Skip empty lines and comments
                 if (line.isEmpty() || line.startsWith("#")) continue;
 
                 // Vertices
                 if (line.startsWith("v ")) {
-                    String[] parts = line.split("\\s+");
+                    String[] p = line.split("\\s+");
+                    vertices.add(new Vector3D(
+                        Double.parseDouble(p[1]),
+                        Double.parseDouble(p[2]),
+                        Double.parseDouble(p[3])
+                    ));
+                }
 
-                    double x = Double.parseDouble(parts[1]);
-                    double y = Double.parseDouble(parts[2]);
-                    double z = Double.parseDouble(parts[3]);
-
-                    vertices.add(new Vector3D(x, y, z));
+                // Vertex normals
+                else if (line.startsWith("vn ")) {
+                    String[] p = line.split("\\s+");
+                    normals.add(new Vector3D(
+                        Double.parseDouble(p[1]),
+                        Double.parseDouble(p[2]),
+                        Double.parseDouble(p[3])
+                    ).normalize());
                 }
 
                 // Faces
                 else if (line.startsWith("f ")) {
                     String[] parts = line.split("\\s+");
 
-                    // Parse each vertex token, handling formats:
-                    // "v", "v/vt", "v/vt/vn", "v//vn"
-                    int[] idx = new int[parts.length - 1];
-                    for (int i = 0; i < idx.length; i++) {
-                        idx[i] = Integer.parseInt(parts[i + 1].split("/")[0]) - 1;
+                    int[] vi = new int[parts.length - 1]; // vertex indices
+                    int[] ni = new int[parts.length - 1]; // normal indices
+                    boolean hasNormals = false;
+
+                    for (int i = 0; i < vi.length; i++) {
+                        String[] tokens = parts[i + 1].split("/");
+                        vi[i] = Integer.parseInt(tokens[0]) - 1;
+
+                        // Format v/vt/vn or v//vn
+                        if (tokens.length == 3 && !tokens[2].isEmpty()) {
+                            ni[i] = Integer.parseInt(tokens[2]) - 1;
+                            hasNormals = true;
+                        }
                     }
 
-                    // Fan-triangulate the face (handles triangles, quads, and n-gons)
-                    for (int i = 1; i < idx.length - 1; i++) {
-                        Triangle tri = new Triangle(
-                            vertices.get(idx[0]),
-                            vertices.get(idx[i]),
-                            vertices.get(idx[i + 1]),
-                            color
-                        );
+                    // Fan-triangulate
+                    for (int i = 1; i < vi.length - 1; i++) {
+                        Triangle tri;
+                        if (hasNormals && !normals.isEmpty()) {
+                            tri = new Triangle(
+                                vertices.get(vi[0]), vertices.get(vi[i]), vertices.get(vi[i+1]),
+                                normals.get(ni[0]),  normals.get(ni[i]),  normals.get(ni[i+1]),
+                                color
+                            );
+                        } else {
+                            tri = new Triangle(
+                                vertices.get(vi[0]), vertices.get(vi[i]), vertices.get(vi[i+1]),
+                                color
+                            );
+                        }
                         triangles.add(tri);
                     }
                 }
@@ -66,19 +77,15 @@ public class OBJReader {
 
         } catch (IOException e) {
             System.err.println("Error reading OBJ file: " + e.getMessage());
-            e.printStackTrace();
         } catch (NumberFormatException e) {
-            System.err.println("Error parsing OBJ file (malformed number): " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Malformed number in OBJ file: " + e.getMessage());
         } catch (IndexOutOfBoundsException e) {
-            System.err.println("Error parsing OBJ file (vertex index out of bounds): " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("Index out of bounds in OBJ file: " + e.getMessage());
         }
 
         return triangles;
     }
 
-    // Debugging method - very useful btw
     public static void printBounds(List<Triangle> triangles) {
         double minX = Double.MAX_VALUE, minY = Double.MAX_VALUE, minZ = Double.MAX_VALUE;
         double maxX = -Double.MAX_VALUE, maxY = -Double.MAX_VALUE, maxZ = -Double.MAX_VALUE;
