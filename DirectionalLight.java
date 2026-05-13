@@ -30,4 +30,10 @@ public class DirectionalLight extends Light {
             Math.min(objectColor.getZ() * diffuseShade * color.getZ() + specularShade, 1.0)
         );
     }
+
+    // Directional Light is infinite
+    @Override
+    public double getDistanceToLight(Vector3D hitPoint) {
+        return Double.POSITIVE_INFINITY;
+    }
 }

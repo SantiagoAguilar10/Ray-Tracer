@@ -17,6 +17,26 @@ public class Raytracer {
     public Camera getCamera() { return camera;}
     public Scene getScene() { return scene;}
 
+    /**
+     * Casts a shadow ray from the hit point toward the light.
+     * Returns true if something blocks the path to the light.
+     */
+    private boolean isInShadow(Vector3D hitPoint, Vector3D toLight, double lightDistance) {
+
+        // Offset the origin slightly along the normal to avoid self-intersection
+        Vector3D shadowOrigin = new Vector3D(
+            hitPoint.getX() + toLight.getX() * 1e-4,
+            hitPoint.getY() + toLight.getY() * 1e-4,
+            hitPoint.getZ() + toLight.getZ() * 1e-4
+        );
+
+        Ray shadowRay = new Ray(shadowOrigin, toLight);
+        Intersection shadowHit = scene.intersect(shadowRay);
+
+        // Only count as shadow if the blocker is closer than the light itself
+        return shadowHit != null && shadowHit.getT() < lightDistance;
+    }
+
     public Vector3D shade(Intersection hit) {
         Vector3D color = new Vector3D(0, 0, 0);
         Vector3D objectColor = hit.getObject().getColor();
@@ -28,6 +48,19 @@ public class Raytracer {
         double ambientLight = 0.15;
 
         for (Light light : scene.getLights()) {
+
+            Vector3D toLight = light.getDirectionToLight(hitPoint);
+            double lightDistance = light.getDistanceToLight(hitPoint);
+
+            if (isInShadow(hitPoint, toLight, lightDistance)) {
+                color = new Vector3D(
+                    color.getX() + objectColor.getX() * ambientLight,
+                    color.getY() + objectColor.getY() * ambientLight,
+                    color.getZ() + objectColor.getZ() * ambientLight
+                );
+                continue;
+            }
+
             Vector3D contribution = light.shade(hitPoint, normal, objectColor, ambientLight, cameraPos, shininess);
             color = new Vector3D(
                 color.getX() + contribution.getX(),
