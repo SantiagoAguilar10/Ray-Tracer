@@ -3,7 +3,7 @@ import java.util.*;
 
 public class OBJReader {
 
-    public static List<Triangle> load(String path, Vector3D color) {
+    public static List<Triangle> load(String path, Vector3D color, Vector3D offset) {
 
         List<Vector3D> vertices = new ArrayList<>();
         List<Vector3D> normals  = new ArrayList<>(); // vn lines
@@ -20,9 +20,9 @@ public class OBJReader {
                 if (line.startsWith("v ")) {
                     String[] p = line.split("\\s+");
                     vertices.add(new Vector3D(
-                        Double.parseDouble(p[1]),
-                        Double.parseDouble(p[2]),
-                        Double.parseDouble(p[3])
+                        Double.parseDouble(p[1]) + offset.getX(),
+                        Double.parseDouble(p[2]) + offset.getY(),
+                        Double.parseDouble(p[3]) + offset.getZ()
                     ));
                 }
 

@@ -22,7 +22,7 @@ public class Raytracer {
         Vector3D objectColor = hit.getObject().getColor();
         Vector3D normal = hit.getNormal();
         Vector3D hitPoint = hit.getPoint();
-        double   shininess = hit.getObject().getShininess();
+        double shininess = hit.getObject().getShininess();
         Vector3D cameraPos = camera.getPosition();
 
         double ambientLight = 0.15;
@@ -61,12 +61,11 @@ public class Raytracer {
         int height = 900;
 
         // Camera
-        Camera camera = new Camera(new Vector3D(0, 0.3, 2), 60,  (double)width / height);
+        Camera camera = new Camera(new Vector3D(0, 0.3, 2), 60, (double)width / height);
         camera.setBackgroundColor(new Vector3D(0, 0, 0));
 
         // Scene
         Scene scene = new Scene();
-
         
         scene.addObject(new Sphere(new Vector3D(-5, 4, -7), 1, new Vector3D(1, 0, 0)));
         scene.addObject(new Sphere(new Vector3D(5,3, -10), 1 ,new Vector3D(0, 0, 1)));
@@ -78,13 +77,13 @@ public class Raytracer {
             1.0                            // Full intensity.
         ));
 
-        List<Triangle> tea = OBJReader.load("teapot.obj", new Vector3D(1, 0.5, 1));
+        List<Triangle> tea = OBJReader.load("teapot.obj", new Vector3D(1, 0.5, 1), new Vector3D(0, -0.5, -3));
         OBJReader.printBounds(tea);
         for (Triangle t : tea) {
             scene.addObject(t);
         }
 
-        List<Triangle> tris = OBJReader.load("CottonCandy.obj", new Vector3D(1, 0.5, 1));
+        List<Triangle> tris = OBJReader.load("CottonCandy.obj", new Vector3D(1, 0.5, 1), new Vector3D(-2, 0, -1));
         OBJReader.printBounds(tris);
         for (Triangle t : tris) {
             scene.addObject(t);
