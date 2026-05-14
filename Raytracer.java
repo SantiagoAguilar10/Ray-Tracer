@@ -100,27 +100,29 @@ public class Raytracer {
         // Scene
         Scene scene = new Scene();
         
-        scene.addObject(new Sphere(new Vector3D(-5, 4, -7), 1, new Vector3D(1, 0, 0)));
-        scene.addObject(new Sphere(new Vector3D(5,3, -10), 1 ,new Vector3D(0, 0, 1)));
+        scene.addObject(new Sphere(new Vector3D(-5, 2, -6), 2, new Vector3D(1, 0, 0)));
+        scene.addObject(new Sphere(new Vector3D(1,1.5, -7), 3 ,new Vector3D(0, 0, 1)));
         
         // Placing the light above of the model, in front of the camera.
         scene.addLight(new PointLight(
-            new Vector3D(0, 0.3, 1.5),  // Position.
+            new Vector3D(0, -0.3, -0.5),  // Position.
             new Vector3D(1.0, 1.0, 1.0),  // White light.
             1.0                            // Full intensity.
         ));
 
-        List<Triangle> tea = OBJReader.load("teapot.obj", new Vector3D(1, 0.5, 1), new Vector3D(0, -0.5, -3));
+        List<Triangle> tea = OBJReader.load("teapot.obj", new Vector3D(1, 0.5, 1), new Vector3D(0, -0.5, -2));
         OBJReader.printBounds(tea);
         for (Triangle t : tea) {
             scene.addObject(t);
         }
 
+        /*
         List<Triangle> tris = OBJReader.load("CottonCandy.obj", new Vector3D(1, 0.5, 1), new Vector3D(-2, 0, -1));
         OBJReader.printBounds(tris);
         for (Triangle t : tris) {
             scene.addObject(t);
         }
+        */
 
         // Raytracer
         Raytracer raytracer = new Raytracer(scene, camera);
