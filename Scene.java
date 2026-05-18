@@ -12,7 +12,7 @@ public class Scene {
     }
 
     public void addObject(Object3D object) { objects.add(object); }
-    public void addLight(PointLight light)  { lights.add(light); }
+    public void addLight(Light light)  { lights.add(light); }
 
     public List<Object3D> getObjects() { return objects; }
     public List<Light> getLights() { return lights; }
