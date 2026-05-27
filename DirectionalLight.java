@@ -11,7 +11,7 @@ public class DirectionalLight extends Light {
     public Vector3D getDirectionToLight(Vector3D hitPoint) { return direction; }
 
     @Override
-    public Vector3D shade(Vector3D hitPoint, Vector3D normal, Vector3D objectColor, double ambientLight, Vector3D cameraPosition, double shininess) {
+    public Vector3D shade(Vector3D hitPoint, Vector3D normal, Vector3D objectColor, double ambientLight, Vector3D cameraPosition, double shininess, double specularStrength) {
 
         Vector3D toCamera = cameraPosition.substract(hitPoint).normalize();
 
@@ -20,7 +20,6 @@ public class DirectionalLight extends Light {
         Vector3D reflection = normal.scale(2.0 * normal.dotProduct(direction)).substract(direction);
         double specular = Math.pow(Math.max(0.0, reflection.dotProduct(toCamera)), shininess);
 
-        double specularStrength = 0.3; // How strong the highlight is (0.0 - 1.0)
         double diffuseShade  = ambientLight + (1.0 - ambientLight) * diffuse * intensity;
         double specularShade = specularStrength * specular * intensity;
 

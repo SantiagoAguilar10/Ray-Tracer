@@ -8,6 +8,8 @@ public class PointLight extends Light {
     }
     
     public Vector3D getPosition() { return position; }
+
+    
     
     @Override
     public Vector3D getDirectionToLight(Vector3D hitPoint) {
@@ -16,7 +18,7 @@ public class PointLight extends Light {
     
     
     @Override
-    public Vector3D shade(Vector3D hitPoint, Vector3D normal, Vector3D objectColor, double ambientLight, Vector3D cameraPosition, double shininess) {
+    public Vector3D shade(Vector3D hitPoint, Vector3D normal, Vector3D objectColor, double ambientLight, Vector3D cameraPosition, double shininess, double specularStrength) {
         
         Vector3D toLight  = getDirectionToLight(hitPoint);
         Vector3D toCamera = cameraPosition.substract(hitPoint).normalize();
@@ -35,7 +37,6 @@ public class PointLight extends Light {
         Vector3D reflection = normal.scale(2.0 * normal.dotProduct(toLight)).substract(toLight);
         double specular = Math.pow(Math.max(0.0, reflection.dotProduct(toCamera)), shininess);
 
-        double specularStrength = 0.3;
         double diffuseShade = ambientLight + (1.0 - ambientLight) * diffuse * falloff;
         double specularShade = specularStrength * specular * falloff;
 

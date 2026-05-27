@@ -20,7 +20,7 @@ public abstract class Light {
     /**
      * Computes this light's shaded color contribution on a surface.
      */
-    public abstract Vector3D shade(Vector3D hitPoint, Vector3D normal, Vector3D objectColor, double ambientLight, Vector3D cameraPosition, double shininess);
+    public abstract Vector3D shade(Vector3D hitPoint, Vector3D normal, Vector3D objectColor, double ambientLight, Vector3D cameraPosition, double shininess, double specularStrength);
 
     public abstract double getDistanceToLight(Vector3D hitPoint);
 }

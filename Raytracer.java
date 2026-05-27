@@ -1,6 +1,5 @@
 import java.io.File;
 import java.util.List;
-import java.util.Vector;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
@@ -45,8 +44,8 @@ public class Raytracer {
         Vector3D normal = hit.getNormal();
         Vector3D hitPoint = hit.getPoint();
         double shininess = hit.getObject().getShininess();
+        double specularStrength = hit.getObject().getSpecularStrength();
         Vector3D cameraPos = camera.getPosition();
-
         double ambientLight = 0.15;
 
         for (Light light : scene.getLights()) {
@@ -63,7 +62,7 @@ public class Raytracer {
                 continue;
             }
 
-            Vector3D contribution = light.shade(hitPoint, normal, objectColor, ambientLight, cameraPos, shininess);
+            Vector3D contribution = light.shade(hitPoint, normal, objectColor, ambientLight, cameraPos, shininess, specularStrength);
             color = new Vector3D(
                 color.getX() + contribution.getX(),
                 color.getY() + contribution.getY(),
@@ -143,99 +142,126 @@ public class Raytracer {
 
     public static void main(String[] args) throws Exception {
 
-        // Image dimensions - Final version requires 4K
-        int width = 1200; // 4096
-        int height = 900; // 2160
+        int width  = 1200;
+        int height = 900;
 
-        // Camera
-        Camera camera = new Camera(new Vector3D(0, 0, 5), 60, (double)width / height);
+        // Camera pulled back to see the full room
+        Camera camera = new Camera(new Vector3D(0, 2, 8), 60, (double)width / height);
         camera.setBackgroundColor(new Vector3D(0, 0, 0));
 
-        // Scene
         Scene scene = new Scene();
-        
-        // Example: reflective red sphere
-        Sphere mirrorSphere = new Sphere(new Vector3D(-2, 1, -2), 1, new Vector3D(1, 0, 0));
-        mirrorSphere.setReflectivity(0.8);
-        scene.addObject(mirrorSphere);
 
-        Sphere mirrorSphere2 = new Sphere(new Vector3D(3,1, -2), 1.5 ,new Vector3D(0, 0, 1));
-        mirrorSphere2.setReflectivity(0.8);
-        scene.addObject(mirrorSphere2);
+        // WALLS — each wall is two triangles forming a rectangle
+        // Room spans X: -8 to 8, Y: -2 to 8, Z: -10 to 8
 
-        Sphere s1 = new Sphere(new Vector3D(1, -3, -3), 1.5, new Vector3D(1, 0, 1));
-        s1.setReflectivity(0.6);
+        // Floor (Y = -2) — gray
+        Vector3D floorColor = new Vector3D(0.5, 0.5, 0.5);
+        scene.addObject(new Triangle(
+            new Vector3D(-8, -2, -10), new Vector3D( 8, -2, -10), new Vector3D( 8, -2, 8), floorColor));
+        scene.addObject(new Triangle(
+            new Vector3D(-8, -2, -10), new Vector3D( 8, -2,  8), new Vector3D(-8, -2, 8), floorColor));
+
+        // Ceiling (Y = 8) — dark gray
+        Vector3D ceilColor = new Vector3D(0.3, 0.3, 0.3);
+        scene.addObject(new Triangle(
+            new Vector3D(-8, 8, -10), new Vector3D( 8, 8,  8), new Vector3D( 8, 8, -10), ceilColor));
+        scene.addObject(new Triangle(
+            new Vector3D(-8, 8, -10), new Vector3D(-8, 8,  8), new Vector3D( 8, 8,  8), ceilColor));
+
+        // Back wall (Z = -10) — off white
+        Vector3D backColor = new Vector3D(0.9, 0.9, 0.85);
+        scene.addObject(new Triangle(
+            new Vector3D(-8, -2, -10), new Vector3D( 8, 8, -10), new Vector3D( 8, -2, -10), backColor));
+        scene.addObject(new Triangle(
+            new Vector3D(-8, -2, -10), new Vector3D(-8, 8, -10), new Vector3D( 8,  8, -10), backColor));
+
+        // Left wall (X = -8) — red tint
+        Vector3D leftColor = new Vector3D(0.8, 0.2, 0.2);
+        scene.addObject(new Triangle(
+            new Vector3D(-8, -2, -10), new Vector3D(-8, -2, 8), new Vector3D(-8, 8, -10), leftColor));
+        scene.addObject(new Triangle(
+            new Vector3D(-8, -2,  8),  new Vector3D(-8,  8, 8), new Vector3D(-8, 8, -10), leftColor));
+
+        // Right wall (X = 8) — blue tint
+        Vector3D rightColor = new Vector3D(0.2, 0.2, 0.8);
+        scene.addObject(new Triangle(
+            new Vector3D(8, -2, -10), new Vector3D(8, 8, -10), new Vector3D(8, -2, 8), rightColor));
+        scene.addObject(new Triangle(
+            new Vector3D(8, 8, -10),  new Vector3D(8, 8,  8),  new Vector3D(8, -2, 8), rightColor));
+
+        // SPHERES — spread out so reflections show wall colors
+
+        // Red reflective sphere — left side
+        Sphere s1 = new Sphere(new Vector3D(-4, 0, -3), 1.5, new Vector3D(1, 0, 0));
+        s1.setReflectivity(0.8);
+        s1.setShininess(128);
+        s1.setSpecularStrength(0.9);
         scene.addObject(s1);
 
-        Sphere s2 = new Sphere(new Vector3D(-5, 3, -3), 1.5, new Vector3D(1, 1, 0));
+        // Blue reflective sphere — right side
+        Sphere s2 = new Sphere(new Vector3D(4, 0, -3), 1.5, new Vector3D(0, 0, 1));
         s2.setReflectivity(0.8);
+        s2.setShininess(128);
+        s2.setSpecularStrength(0.9);
         scene.addObject(s2);
 
-        Sphere s3 = new Sphere(new Vector3D(0, 4, -5), 2, new Vector3D(1, 1, 1));
+        // White mirror sphere — back center, perfect mirror
+        Sphere s3 = new Sphere(new Vector3D(0, 1, -7), 2, new Vector3D(1, 1, 1));
         s3.setReflectivity(1.0);
+        s3.setShininess(256);
+        s3.setSpecularStrength(1.0);
         scene.addObject(s3);
 
-        // Placing the light above of the model, in front of the camera.
-        /*
-        */
-       scene.addLight(new PointLight(
-           new Vector3D(0, 2, 0),  // Position.
-           new Vector3D(1.0, 1.0, 1.0),  // White light.
-           1.0                            // Full intensity.
-       ));
+        // Yellow sphere — upper left, less reflective
+        Sphere s4 = new Sphere(new Vector3D(-3, 3, -5), 1, new Vector3D(1, 1, 0));
+        s4.setReflectivity(0.4);
+        s4.setShininess(64);
+        scene.addObject(s4);
 
+        // Magenta sphere — lower center foreground
+        Sphere s5 = new Sphere(new Vector3D(1, -0.5, 0), 1, new Vector3D(1, 0, 1));
+        s5.setReflectivity(0.6);
+        s5.setShininess(96);
+        scene.addObject(s5);
 
-        /*
-        scene.addLight(new DirectionalLight(
-            new Vector3D(1, 1, 1).normalize(), // Direction the light travels
-            new Vector3D(1, 1, 1),               // White
-            1.0                                   // Intensity
+        // TEAPOT — center of the scene, sitting on the floor
+        List<Triangle> tea = OBJReader.load("teapot.obj", new Vector3D(1, 0.5, 1), new Vector3D(0, -2, -4));
+        for (Triangle t : tea) scene.addObject(t);
+
+        
+        // LIGHTS
+        // Main light above center
+        scene.addLight(new PointLight(
+            new Vector3D(0, 7, 0),
+            new Vector3D(1, 1, 1),
+            1.0
         ));
-        */
 
-        List<Triangle> tea = OBJReader.load("teapot.obj", new Vector3D(1, 0.5, 1), new Vector3D(0, -0.5, -2));
-        OBJReader.printBounds(tea);
-        for (Triangle t : tea) {
-            scene.addObject(t);
-        }
-
-        /*
-        List<Triangle> tris = OBJReader.load("CottonCandy.obj", new Vector3D(1, 0.5, 1), new Vector3D(-2, 0, -1));
-        OBJReader.printBounds(tris);
-        for (Triangle t : tris) {
-            scene.addObject(t);
-        }
-        */
+        // Secondary fill light from the front-right to reduce harsh shadows
+        scene.addLight(new PointLight(
+            new Vector3D(5, 3, 6),
+            new Vector3D(0.8, 0.8, 1.0), // Slightly cool
+            0.5
+        ));
 
         // Raytracer
         Raytracer raytracer = new Raytracer(scene, camera);
-
-        // Image
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
-        // Render
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-
                 Ray ray = camera.generateRay(x, y, width, height);
-
-                // Pass depth 0 for initial ray
                 Vector3D color = raytracer.traceRay(ray, 0);
 
-                // Convert color to RGB
                 int r = (int)(255 * color.getX());
                 int g = (int)(255 * color.getY());
                 int b = (int)(255 * color.getZ());
 
-                int rgb = (r << 16) | (g << 8) | b;
-
-                image.setRGB(x, y, rgb);
+                image.setRGB(x, y, (r << 16) | (g << 8) | b);
             }
         }
 
-        // Save Image
         ImageIO.write(image, "png", new File("output.png"));
-
-        System.out.println("Imagen generada: output.png");
+        System.out.println("Generated Image: output.png");
     }
 }
