@@ -26,8 +26,14 @@ public class Scene {
 
         for (Object3D object : objects) {
             Intersection intersection = object.intersect(ray);
+
             if (intersection != null) {
                 double t = intersection.getT();
+
+                // Skip back-face hits on refractive objects — the refract()
+                // method handles exiting the object internally via Snell's law
+                if (intersection.isInside() && object.getRefractivity() > 0.0) continue;
+
                 if (t > nearplane && t < farplane && t < minDistance) {
                     minDistance = t;
                     closestIntersection = intersection;

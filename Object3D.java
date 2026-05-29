@@ -6,25 +6,35 @@ public abstract class Object3D {
     private double shininess;
     private double reflectivity;
     private double specularStrength;
+    private double refractivity;
+    private double refractiveIndex;
 
     // Constructor
-    public Object3D (Vector3D position, Vector3D color, double shininess, double reflectivity, double specularStrength) {
+    public Object3D (Vector3D position, Vector3D color, double shininess, double reflectivity, double specularStrength, double refractivity, double refracrtiveIndex) {
         this.position = position;
         this.color = color;
         this.shininess = shininess;
         this.reflectivity = reflectivity;
         this.specularStrength = specularStrength;
+        this.refractivity = refractivity;
+        this.refractiveIndex = refracrtiveIndex;
+    }
+
+
+    // Without refraction
+    public Object3D (Vector3D position, Vector3D color, double shininess, double reflectivity, double specularStrength) {
+        this(position, color, shininess, reflectivity, specularStrength, 0.0, 1.0);
     }
 
     // Compatible constructor for Objects without shininess and reflectivity
-    // Without specularStrength
+    // Without specularStrength or refraction
     public Object3D(Vector3D position, Vector3D color, double shininess, double reflectivity) {
-        this(position, color, shininess, reflectivity, 0.3);
+        this(position, color, shininess, reflectivity, 0.3, 0.0, 1.0);
     }
 
-    // Without shininess and reflectivity
+    // Without Nothin' - mininal constructor
     public Object3D(Vector3D position, Vector3D color) {
-        this(position, color, 32.0, 0.0, 0.3);
+        this(position, color, 32.0, 0.0, 0.3, 0.0, 1.0);
     }
 
     // Getters and setters
@@ -42,6 +52,12 @@ public abstract class Object3D {
 
     public double getSpecularStrength() { return specularStrength;}
     public void setSpecularStrength(double specularStrength) { this.specularStrength = specularStrength;}
+
+    public double getRefractivity() { return refractivity;}
+    public void setRefractivity(double refractivity) { this.refractivity = refractivity;}
+
+    public double getRefractiveIndex() { return refractiveIndex;}
+    public void setRefractiveIndex(double refractiveIndex) { this.refractiveIndex = refractiveIndex;}
 
     // Abstract method to compute intersection with a ray
     public abstract Intersection intersect(Ray ray);
