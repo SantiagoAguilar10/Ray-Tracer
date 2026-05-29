@@ -341,7 +341,7 @@ public class Raytracer {
 
         // Experiment
 
-        /*
+        
          
         // Camera pulled back to see the full room
         Camera camera = new Camera(new Vector3D(0, 0, 4), 60, (double)width / height);
@@ -390,49 +390,49 @@ public class Raytracer {
         // SPHERES - spread out so reflections show wall colors
 
         // Red reflective sphere - left side
-        /*
+        
         Sphere s1 = new Sphere(new Vector3D(-4, 0, -3), 1.5, new Vector3D(1, 0, 0));
         s1.setReflectivity(0.8);
         s1.setShininess(128);
         s1.setSpecularStrength(0.9);
         scene.addObject(s1);
-         */
+         
 
         // Blue reflective sphere — right side
-        /*
+        
         Sphere s2 = new Sphere(new Vector3D(4, 0, -3), 1.5, new Vector3D(0, 0, 1));
         s2.setReflectivity(0.8);
         s2.setShininess(128);
         s2.setSpecularStrength(0.9);
         scene.addObject(s2);
-         */
+         
 
         // White mirror sphere — back center, perfect mirror
-        /*
+        
         Sphere s3 = new Sphere(new Vector3D(0, 1, -7), 2, new Vector3D(1, 1, 1));
         s3.setReflectivity(1.0);
         s3.setShininess(256);
         s3.setSpecularStrength(1.0);
         scene.addObject(s3);
-         */
+         
 
         // Yellow sphere — upper left, less reflective
-        /*
+        
         Sphere s4 = new Sphere(new Vector3D(-3, 3, -5), 1, new Vector3D(1, 1, 0));
         s4.setReflectivity(0.4);
         s4.setShininess(64);
         scene.addObject(s4);
-         */
+         
 
         // Magenta sphere — lower center foreground
-        /*
+        
         Sphere s5 = new Sphere(new Vector3D(1, -0.5, 0), 1, new Vector3D(1, 0, 1));
         s5.setReflectivity(0.6);
         s5.setShininess(96);
         scene.addObject(s5);
-         */
+         
 
-        /*
+        
         // TEAPOT - center of the scene, sitting on the floor
         List<Triangle> tea = OBJReader.load("teapot.obj", new Vector3D(1, 0.5, 1), new Vector3D(0, -2, -4));
         for (Triangle t : tea) scene.addObject(t);
@@ -469,31 +469,7 @@ public class Raytracer {
             0.8
         ));
         
-        */
-
-        // Camera
-        Camera camera = new Camera(new Vector3D(0, 0, 4), 60, (double)width / height);
-
-        Scene scene = new Scene();
-
-        // Just a bright back wall so refracted rays hit something visible
-        Vector3D backColor = new Vector3D(1.0, 0.0, 0.0); // Bright red — easy to see through glass
-        scene.addObject(new Triangle(
-            new Vector3D(-5, -3, -5), new Vector3D(5, 5, -5), new Vector3D(5, -3, -5), backColor));
-        scene.addObject(new Triangle(
-            new Vector3D(-5, -3, -5), new Vector3D(-5, 5, -5), new Vector3D(5, 5, -5), backColor));
-
-        // Single glass sphere dead center
-        Sphere glass = new Sphere(
-            new Vector3D(0, 0, -1), 0.8, new Vector3D(1, 1, 1), 64, 0.0, 0.5, 1.0, 1.5);
-        scene.addObject(glass);
-
-        // One strong light directly in front
-        scene.addLight(new PointLight(
-            new Vector3D(0, 2, 3),
-            new Vector3D(1, 1, 1),
-            2.0
-        ));
+        
 
         // Raytracer
         Raytracer raytracer = new Raytracer(scene, camera);
