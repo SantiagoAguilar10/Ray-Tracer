@@ -56,4 +56,20 @@ public class Vector3D {
         }
         return new Vector3D(x / mag, y / mag, z / mag);
     }
+
+    public Vector3D min(Vector3D other) {
+        return new Vector3D(
+            Math.min(this.x, other.x),
+            Math.min(this.y, other.y),
+            Math.min(this.z, other.z)
+        );
+    }
+
+    public Vector3D max(Vector3D other) {
+        return new Vector3D(
+            Math.max(this.x, other.x),
+            Math.max(this.y, other.y),
+            Math.max(this.z, other.z)
+        );
+    }
 }

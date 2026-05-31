@@ -336,140 +336,163 @@ public class Raytracer {
 
     public static void main(String[] args) throws Exception {
 
-        int width  = 1200;
-        int height = 900;
+        int width  = 4096;
+        int height = 2160;
 
-        // Experiment
-
-        
-         
-        // Camera pulled back to see the full room
-        Camera camera = new Camera(new Vector3D(0, 0, 4), 60, (double)width / height);
+        // Camera pulled back further to see the larger room
+        Camera camera = new Camera(new Vector3D(0, 2, 10), 70, (double)width / height);
         camera.setBackgroundColor(new Vector3D(0, 0, 0));
 
         Scene scene = new Scene();
 
-        // WALLS - each wall is two triangles forming a rectangle
-        // Room spans X: -8 to 8, Y: -2 to 8, Z: -10 to 8
+        // -------------------------------------------------------
+        // ROOM — spans X: -14 to 14, Y: -3 to 10, Z: -14 to 10
+        // Larger room gives more breathing room between objects
+        // -------------------------------------------------------
 
-        // Floor (Y = -2) - gray
-        Vector3D floorColor = new Vector3D(0.7, 0.7, 0.7);
+        // Floor (Y = -3) — warm gray
+        Vector3D floorColor = new Vector3D(0.65, 0.62, 0.58);
         scene.addObject(new Triangle(
-            new Vector3D(-8, -2, -10), new Vector3D( 8, -2, -10), new Vector3D( 8, -2, 8), floorColor));
+            new Vector3D(-14, -3, -14), new Vector3D( 14, -3, -14), new Vector3D( 14, -3, 10), floorColor));
         scene.addObject(new Triangle(
-            new Vector3D(-8, -2, -10), new Vector3D( 8, -2,  8), new Vector3D(-8, -2, 8), floorColor));
+            new Vector3D(-14, -3, -14), new Vector3D( 14, -3,  10), new Vector3D(-14, -3, 10), floorColor));
 
-        // Ceiling (Y = 8) - dark gray
-        Vector3D ceilColor = new Vector3D(0.8, 0.8, 0.8);
+        // Ceiling (Y = 10) — light gray
+        Vector3D ceilColor = new Vector3D(0.85, 0.85, 0.85);
         scene.addObject(new Triangle(
-            new Vector3D(-8, 8, -10), new Vector3D( 8, 8,  8), new Vector3D( 8, 8, -10), ceilColor));
+            new Vector3D(-14, 10, -14), new Vector3D( 14, 10, -14), new Vector3D( 14, 10, 10), ceilColor));
         scene.addObject(new Triangle(
-            new Vector3D(-8, 8, -10), new Vector3D(-8, 8,  8), new Vector3D( 8, 8,  8), ceilColor));
+            new Vector3D(-14, 10, -14), new Vector3D( 14, 10,  10), new Vector3D(-14, 10, 10), ceilColor));
 
-        // Back wall (Z = -10) - off white
-        Vector3D backColor = new Vector3D(0.95, 0.95, 0.9);
+        // Back wall (Z = -14) — off white
+        Vector3D backColor = new Vector3D(0.92, 0.90, 0.85);
         scene.addObject(new Triangle(
-            new Vector3D(-8, -2, -10), new Vector3D( 8, 8, -10), new Vector3D( 8, -2, -10), backColor));
+            new Vector3D(-14, -3, -14), new Vector3D( 14, -3, -14), new Vector3D( 14, 10, -14), backColor));
         scene.addObject(new Triangle(
-            new Vector3D(-8, -2, -10), new Vector3D(-8, 8, -10), new Vector3D( 8,  8, -10), backColor));
+            new Vector3D(-14, -3, -14), new Vector3D( 14, 10, -14), new Vector3D(-14, 10, -14), backColor));
 
-        // Left wall (X = -8) - red tint
-        Vector3D leftColor = new Vector3D(0.8, 0.2, 0.2);
+        // Left wall (X = -14) — deep red
+        Vector3D leftColor = new Vector3D(0.75, 0.15, 0.15);
         scene.addObject(new Triangle(
-            new Vector3D(-8, -2, -10), new Vector3D(-8, -2, 8), new Vector3D(-8, 8, -10), leftColor));
+            new Vector3D(-14, -3, -14), new Vector3D(-14, -3, 10), new Vector3D(-14, 10, 10), leftColor));
         scene.addObject(new Triangle(
-            new Vector3D(-8, -2,  8),  new Vector3D(-8,  8, 8), new Vector3D(-8, 8, -10), leftColor));
+            new Vector3D(-14, -3, -14), new Vector3D(-14, 10, 10), new Vector3D(-14, 10, -14), leftColor));
 
-        // Right wall (X = 8) - blue tint
-        Vector3D rightColor = new Vector3D(0.2, 0.2, 0.8);
+        // Right wall (X = 14) — deep blue
+        Vector3D rightColor = new Vector3D(0.15, 0.15, 0.75);
         scene.addObject(new Triangle(
-            new Vector3D(8, -2, -10), new Vector3D(8, 8, -10), new Vector3D(8, -2, 8), rightColor));
+            new Vector3D(14, -3, -14), new Vector3D(14, 10, -14), new Vector3D(14, 10, 10), rightColor));
         scene.addObject(new Triangle(
-            new Vector3D(8, 8, -10),  new Vector3D(8, 8,  8),  new Vector3D(8, -2, 8), rightColor));
+            new Vector3D(14, -3, -14), new Vector3D(14, 10,  10), new Vector3D(14, -3, 10), rightColor));
 
-        // SPHERES - spread out so reflections show wall colors
+        // -------------------------------------------------------
+        // REFLECTIVE SPHERES — pushed apart to use the larger room
+        // -------------------------------------------------------
 
-        // Red reflective sphere - left side
-        
-        Sphere s1 = new Sphere(new Vector3D(-4, 0, -3), 1.5, new Vector3D(1, 0, 0));
+        // Red metallic — far left
+        Sphere s1 = new Sphere(new Vector3D(-7, 0, -5), 2.0, new Vector3D(1, 0.1, 0.1));
         s1.setReflectivity(0.8);
         s1.setShininess(128);
         s1.setSpecularStrength(0.9);
         scene.addObject(s1);
-         
 
-        // Blue reflective sphere — right side
-        
-        Sphere s2 = new Sphere(new Vector3D(4, 0, -3), 1.5, new Vector3D(0, 0, 1));
+        // Blue metallic — far right
+        Sphere s2 = new Sphere(new Vector3D(7, 0, -5), 2.0, new Vector3D(0.1, 0.1, 1));
         s2.setReflectivity(0.8);
         s2.setShininess(128);
         s2.setSpecularStrength(0.9);
         scene.addObject(s2);
-         
 
-        // White mirror sphere — back center, perfect mirror
-        
-        Sphere s3 = new Sphere(new Vector3D(0, 1, -7), 2, new Vector3D(1, 1, 1));
+        // Perfect mirror — back center elevated
+        Sphere s3 = new Sphere(new Vector3D(0, 4, -10), 2.5, new Vector3D(1, 1, 1));
         s3.setReflectivity(1.0);
         s3.setShininess(256);
         s3.setSpecularStrength(1.0);
         scene.addObject(s3);
-         
 
-        // Yellow sphere — upper left, less reflective
-        
-        Sphere s4 = new Sphere(new Vector3D(-3, 3, -5), 1, new Vector3D(1, 1, 0));
-        s4.setReflectivity(0.4);
-        s4.setShininess(64);
+        // Gold — upper left
+        Sphere s4 = new Sphere(new Vector3D(-5, 4, -8), 1.5, new Vector3D(1.0, 0.72, 0.2));
+        s4.setReflectivity(0.7);
+        s4.setShininess(128);
+        s4.setSpecularStrength(0.9);
         scene.addObject(s4);
-         
 
-        // Magenta sphere — lower center foreground
-        
-        Sphere s5 = new Sphere(new Vector3D(1, -0.5, 0), 1, new Vector3D(1, 0, 1));
-        s5.setReflectivity(0.6);
+        // Cyan glossy — upper right
+        Sphere s5 = new Sphere(new Vector3D(5, 4, -8), 1.5, new Vector3D(0.1, 0.8, 0.8));
+        s5.setReflectivity(0.5);
         s5.setShininess(96);
+        s5.setSpecularStrength(0.6);
         scene.addObject(s5);
-         
 
-        
-        // TEAPOT - center of the scene, sitting on the floor
-        List<Triangle> tea = OBJReader.load("teapot.obj", new Vector3D(1, 0.5, 1), new Vector3D(0, -2, -4));
-        for (Triangle t : tea) scene.addObject(t);
+        // -------------------------------------------------------
+        // REFRACTIVE SPHERES — spread across the foreground
+        // -------------------------------------------------------
 
-        // Glass sphere — fully transparent, IOR 1.5
-        Sphere glass = new Sphere(new Vector3D( 0, 0, -4), 1.0, new Vector3D(1.0, 1.0, 1.0),   64, 0.0, 0.5, 1.0, 1.5 );
-        Sphere water = new Sphere(new Vector3D( 2, 0, -4), 1.0, new Vector3D(0.6, 0.8, 1.0),   32, 0.0, 0.3, 0.9, 1.33);
-        Sphere diamond = new Sphere(new Vector3D(-2, 0, -4), 0.8, new Vector3D(0.9, 0.95, 1.0), 128, 0.0, 0.8, 1.0, 2.4 );
-
+        // Glass — center
+        Sphere glass = new Sphere(
+            new Vector3D(0, -1, -3), 1.2, new Vector3D(1.0, 1.0, 1.0),
+            128, 0.0, 0.6, 1.0, 1.5
+        );
         scene.addObject(glass);
+
+        // Water — left of center
+        Sphere water = new Sphere(
+            new Vector3D(-3, -1, -3), 1.0, new Vector3D(0.6, 0.85, 1.0),
+            64, 0.0, 0.4, 0.9, 1.33
+        );
         scene.addObject(water);
+
+        // Diamond — right of center
+        Sphere diamond = new Sphere(
+            new Vector3D(3, -1, -3), 1.0, new Vector3D(0.95, 0.95, 1.0),
+            256, 0.0, 0.9, 1.0, 2.4
+        );
         scene.addObject(diamond);
 
-        
+        // -------------------------------------------------------
+        // TEAPOT — center back, sitting on the floor
+        // -------------------------------------------------------
+        List<Triangle> tea = OBJReader.load("Blinn_Teapot.obj",
+            new Vector3D(0.85, 0.45, 0.75),       // Soft purple-pink
+            new Vector3D(0, -3, -7));              // Centered, on the floor
+        tea.forEach(scene::addObject);
+
+        // -------------------------------------------------------
         // LIGHTS
-        // Main light above center
+        // -------------------------------------------------------
+
+        // Main overhead light — centered and high
         scene.addLight(new PointLight(
-            new Vector3D(0, 5, -2),
-            new Vector3D(1, 1, 1),
-            2.0
+            new Vector3D(0, 9, -4),
+            new Vector3D(1.0, 1.0, 1.0),
+            1.5
         ));
 
-        // Secondary fill light from the front-right to reduce harsh shadows
+        // Front fill light — softens shadows on objects facing camera
         scene.addLight(new PointLight(
-            new Vector3D(0, 3, 6),
-            new Vector3D(1, 1, 1), // White light
-            1.0
+            new Vector3D(0, 4, 8),
+            new Vector3D(1.0, 1.0, 1.0),
+            0.6
         ));
 
-        // Side Light to show wall colors in reflections
+        // Left warm accent — picks up red wall color in reflections
         scene.addLight(new PointLight(
-            new Vector3D(-6, 2, -4),
-            new Vector3D(1, 0.5, 0.5), // Warm light
-            0.8
+            new Vector3D(-10, 3, -4),
+            new Vector3D(1.0, 0.6, 0.4),
+            0.7
         ));
-        
-        
+
+        // Right cool accent — picks up blue wall color in reflections
+        scene.addLight(new PointLight(
+            new Vector3D(10, 3, -4),
+            new Vector3D(0.4, 0.6, 1.0),
+            0.7
+        ));
+
+        // -------------------------------------------------------
+        // BUILD BVH — must be called after all objects are added
+        // -------------------------------------------------------
+        scene.buildBVH();
 
         // Raytracer
         Raytracer raytracer = new Raytracer(scene, camera);
@@ -480,9 +503,9 @@ public class Raytracer {
                 Ray ray = camera.generateRay(x, y, width, height);
                 Vector3D color = raytracer.traceRay(ray, 0);
 
-                int r = (int)(255 * color.getX());
-                int g = (int)(255 * color.getY());
-                int b = (int)(255 * color.getZ());
+                int r = (int)(255 * Math.min(color.getX(), 1.0));
+                int g = (int)(255 * Math.min(color.getY(), 1.0));
+                int b = (int)(255 * Math.min(color.getZ(), 1.0));
 
                 image.setRGB(x, y, (r << 16) | (g << 8) | b);
             }

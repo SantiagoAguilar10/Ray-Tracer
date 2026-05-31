@@ -21,6 +21,24 @@ public class Triangle extends Object3D {
         this.n0 = n0; this.n1 = n1; this.n2 = n2;
     }
 
+    // For Bounding Boxes*
+    public AABB getBounds() {
+        double minX = Math.min(v0.getX(), Math.min(v1.getX(), v2.getX()));
+        double minY = Math.min(v0.getY(), Math.min(v1.getY(), v2.getY()));
+        double minZ = Math.min(v0.getZ(), Math.min(v1.getZ(), v2.getZ()));
+
+        double maxX = Math.max(v0.getX(), Math.max(v1.getX(), v2.getX()));
+        double maxY = Math.max(v0.getY(), Math.max(v1.getY(), v2.getY()));
+        double maxZ = Math.max(v0.getZ(), Math.max(v1.getZ(), v2.getZ()));
+
+        // Epsilon padding to avoid zero-thickness boxes on axis-aligned triangles
+        double eps = 1e-4;
+        return new AABB(
+            new Vector3D(minX - eps, minY - eps, minZ - eps),
+            new Vector3D(maxX + eps, maxY + eps, maxZ + eps)
+        );
+    }
+
     public List<Vector3D> getVertices() { return List.of(v0, v1, v2); }
 
     public boolean hasVertexNormals() { return n0 != null; }
