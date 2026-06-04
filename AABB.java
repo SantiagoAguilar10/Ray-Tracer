@@ -70,7 +70,7 @@ public class AABB {
 
             // Avoid division by zero for rays parallel to this slab
             if (Math.abs(d) < 1e-10) {
-                // Ray is parallel — if origin is outside the slab, no hit
+                // Ray is parallel - if origin is outside the slab, no hit
                 if (o < bMin || o > bMax) return false;
                 continue;
             }

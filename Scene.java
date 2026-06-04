@@ -29,7 +29,7 @@ public class Scene {
     public List<Object3D> getObjects()   { return objects; }
     public List<Light> getLights()       { return lights; }
 
-    /**
+    /*
      * Builds the BVH over all triangles added so far.
      * Call this ONCE after loading all OBJ files and before rendering.
      */

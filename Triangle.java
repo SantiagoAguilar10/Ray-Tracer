@@ -73,18 +73,23 @@ public class Triangle extends Object3D {
 
         Vector3D point = ray.pointAlongRay(t);
 
-        // Interpolate normal using barycentric coordinates (u, v, 1-u-v)
+        // Interpolate normal
         Vector3D normal;
         if (hasVertexNormals()) {
-            double w = 1.0 - u - v; // Weight of v0
+            double w = 1.0 - u - v;
             normal = new Vector3D(
                 w * n0.getX() + u * n1.getX() + v * n2.getX(),
                 w * n0.getY() + u * n1.getY() + v * n2.getY(),
                 w * n0.getZ() + u * n1.getZ() + v * n2.getZ()
             ).normalize();
         } else {
-            // Fallback to flat face normal
             normal = edge1.crossProduct(edge2).normalize();
+        }
+
+        // Make triangle double-sided — flip normal if ray hits the back face
+        // This ensures reflections work regardless of which way the face points
+        if (normal.dotProduct(D) > 0) {
+            normal = normal.scale(-1);
         }
 
         return new Intersection(t, point, normal, this);

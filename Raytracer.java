@@ -7,7 +7,7 @@ public class Raytracer {
 
     private Scene scene;
     private Camera camera;
-    private Vector3D background = new Vector3D(0.1, 0.1, 0.15); // BG COLOR - Dark Blue Gray
+    private Vector3D background = new Vector3D(0.0, 0.0, 0.1); // BG COLOR - Dark Blue Gray
     private static final int MAX_DEPTH = 3; // Max reflection bounces
 
     public Raytracer(Scene scene, Camera camera) {
@@ -43,7 +43,6 @@ public class Raytracer {
     }
 
     public Vector3D shade(Intersection hit) {
-        Vector3D color = new Vector3D(0, 0, 0);
         Vector3D objectColor = hit.getObject().getColor();
         Vector3D normal = hit.getNormal();
         Vector3D hitPoint = hit.getPoint();
@@ -51,16 +50,21 @@ public class Raytracer {
         double specStrength = hit.getObject().getSpecularStrength();
         double refractivity = hit.getObject().getRefractivity();
         Vector3D cameraPos = camera.getPosition();
-        double ambientLight = 0.25;
+        double ambientLight = 0.15;
 
-        // Transparent objects — only compute specular highlights, skip diffuse/shadow
-        // Their color comes from refraction in traceRay, not from local shading
+        // Ambient applied ONCE — independent of lights
+        Vector3D color = new Vector3D(
+            objectColor.getX() * ambientLight,
+            objectColor.getY() * ambientLight,
+            objectColor.getZ() * ambientLight
+        );
+
+        // Transparent objects — specular highlights only
         if (refractivity > 0.5) {
             for (Light light : scene.getLights()) {
                 Vector3D toLight = light.getDirectionToLight(hitPoint);
                 Vector3D toCamera = cameraPos.substract(hitPoint).normalize();
 
-                // Only specular — gives the glassy highlight without darkening
                 Vector3D reflection = normal.scale(2.0 * normal.dotProduct(toLight)).substract(toLight);
                 double specular = Math.pow(Math.max(0.0, reflection.dotProduct(toCamera)), shininess);
                 double specShade = specStrength * specular;
@@ -71,29 +75,20 @@ public class Raytracer {
                     Math.min(color.getZ() + specShade, 1.0)
                 );
             }
-            // Return specular highlights over a nearly transparent base
             return color;
         }
 
-        // Opaque objects — full shading as before
+        // Opaque objects — diffuse + specular per light, no ambient inside loop
         for (Light light : scene.getLights()) {
-            Vector3D toLight      = light.getDirectionToLight(hitPoint);
-            double   lightDistance = light.getDistanceToLight(hitPoint);
+            Vector3D toLight = light.getDirectionToLight(hitPoint);
+            double lightDistance = light.getDistanceToLight(hitPoint);
 
-            if (isInShadow(hitPoint, toLight, lightDistance)) {
-                color = new Vector3D(
-                    color.getX() + objectColor.getX() * ambientLight,
-                    color.getY() + objectColor.getY() * ambientLight,
-                    color.getZ() + objectColor.getZ() * ambientLight
-                );
-                continue;
-            }
+            // In shadow — skip this light entirely, ambient already applied above
+            if (isInShadow(hitPoint, toLight, lightDistance)) continue;
 
-            Vector3D contribution = light.shade(
-                hitPoint, normal, objectColor,
-                ambientLight, cameraPos,
-                shininess, specStrength
-            );
+            Vector3D contribution = light.shade(hitPoint, normal, objectColor,
+                                                0.0,        // ← pass 0 ambient to lights
+                                                cameraPos, shininess, specStrength);
             color = new Vector3D(
                 color.getX() + contribution.getX(),
                 color.getY() + contribution.getY(),
@@ -200,50 +195,39 @@ public class Raytracer {
         double reflectivity = hit.getObject().getReflectivity();
         double refractivity = hit.getObject().getRefractivity();
         double refractiveIndex = hit.getObject().getRefractiveIndex();
-
-        // If the object isn't reflective, return local color
-        // if (reflectivity <= 0.0) return localColor;
-
-        // Offset the reflection origin to avoid self-intersection
         Vector3D normal = hit.getNormal();
         Vector3D hitPoint = hit.getPoint();
 
+        // REFRACTION (takes priority over pure reflection)
         if (refractivity > 0.0) {
 
             double fresnelAmount = fresnel(ray.getDirection(), normal, refractiveIndex);
 
-            // Reflection component (even glass can reflect, a little bit)
-            Vector3D reflectedColor = new Vector3D(0, 0, 0);
+            // Reflection component — even glass reflects a little (Fresnel)
             Vector3D offsetReflect = new Vector3D(
                 hitPoint.getX() + normal.getX() * 1e-4,
                 hitPoint.getY() + normal.getY() * 1e-4,
                 hitPoint.getZ() + normal.getZ() * 1e-4
             );
-
             Vector3D reflectDir = reflect(ray.getDirection(), normal);
-            reflectedColor = traceRay(new Ray(offsetReflect, reflectDir), depth + 1);
+            Vector3D reflectedColor = traceRay(new Ray(offsetReflect, reflectDir), depth + 1);
 
             // Refraction component
             Vector3D refractedColor = background;
             Vector3D refractDir = refract(ray.getDirection(), normal, refractiveIndex);
 
-            
             if (refractDir != null) {
-
                 double bias = 1e-4;
-
                 Vector3D offsetRefract;
 
-                // If the refracted ray exits the object:
+                // Offset along or against normal depending on ray exit direction
                 if (refractDir.dotProduct(normal) > 0) {
                     offsetRefract = new Vector3D(
                         hitPoint.getX() + normal.getX() * bias,
                         hitPoint.getY() + normal.getY() * bias,
                         hitPoint.getZ() + normal.getZ() * bias
                     );
-                } 
-
-                else {
+                } else {
                     offsetRefract = new Vector3D(
                         hitPoint.getX() - normal.getX() * bias,
                         hitPoint.getY() - normal.getY() * bias,
@@ -251,49 +235,26 @@ public class Raytracer {
                     );
                 }
 
-                refractedColor = traceRay(
-                    new Ray(offsetRefract, refractDir),
-                    depth + 1
-                );
+                refractedColor = traceRay(new Ray(offsetRefract, refractDir), depth + 1);
             }
-            
 
-            /*
-            if (refractDir != null && depth == 0) {
-                Vector3D offsetRefract = new Vector3D(
-                    hitPoint.getX() - normal.getX() * 1e-4,
-                    hitPoint.getY() - normal.getY() * 1e-4,
-                    hitPoint.getZ() - normal.getZ() * 1e-4
-                );
-                Ray testRay = new Ray(offsetRefract, refractDir);
-                Intersection testHit = scene.intersect(testRay);
-                if (testHit == null) {
-                    System.out.println("Refracted ray hit: BACKGROUND");
-                } else {
-                    System.out.println("Refracted ray hit: " + testHit.getObject().getClass().getSimpleName()
-                        + " at t=" + testHit.getT());
-                }
-            }
-            */
-
-            // Blend reflection and refraction. -- Using Fresnel*
+            // Blend reflection and refraction using Fresnel
             Vector3D refractColor = new Vector3D(
                 fresnelAmount * reflectedColor.getX() + (1 - fresnelAmount) * refractedColor.getX(),
                 fresnelAmount * reflectedColor.getY() + (1 - fresnelAmount) * refractedColor.getY(),
                 fresnelAmount * reflectedColor.getZ() + (1 - fresnelAmount) * refractedColor.getZ()
             );
 
-            // Blend with localColor (based on refractivity)
-            // If refractivity is 1. It means full transparent, so there's no local color
+            // Blend with local color based on refractivity
+            // refractivity = 1.0 means fully transparent — local color ignored
             return new Vector3D(
                 (1 - refractivity) * localColor.getX() + refractivity * refractColor.getX(),
                 (1 - refractivity) * localColor.getY() + refractivity * refractColor.getY(),
                 (1 - refractivity) * localColor.getZ() + refractivity * refractColor.getZ()
             );
-
         }
 
-        // Reflection Only. No Refraction.
+        // REFLECTION ONLY (no refraction)
         if (reflectivity <= 0.0) return localColor;
 
         Vector3D offsetOrigin = new Vector3D(
@@ -302,199 +263,174 @@ public class Raytracer {
             hitPoint.getZ() + normal.getZ() * 1e-4
         );
 
-        // Cast the reflection Ray
         Vector3D reflectDir = reflect(ray.getDirection(), normal);
         Ray reflectionRay = new Ray(offsetOrigin, reflectDir);
         Vector3D reflectedColor = traceRay(reflectionRay, depth + 1);
 
-        // If reflection hits nothing (bg) don't darken the local color
-        // Only blend when the reflected Ray hits
-        boolean reflectionHits = scene.intersect(reflectionRay) != null;
-        if (!reflectionHits) return localColor;
+        // Metallic objects tint their reflections with their own color
+        // Non-metallic (mirrors, floors, puddles) reflect cleanly without tinting
+        Vector3D finalReflection;
+        if (hit.getObject().isMetallic()) {
+            Vector3D objColor = hit.getObject().getColor();
+            finalReflection = new Vector3D(
+                reflectedColor.getX() * objColor.getX(),
+                reflectedColor.getY() * objColor.getY(),
+                reflectedColor.getZ() * objColor.getZ()
+            );
+        } else {
+            finalReflection = reflectedColor;
+        }
 
-        // Tint reflection for metallic look
-        /*
-         */
-        Vector3D objColor = hit.getObject().getColor();
-        Vector3D tintedReflection = new Vector3D(
-            reflectedColor.getX() * objColor.getX(),
-            reflectedColor.getY() * objColor.getY(),
-            reflectedColor.getZ() * objColor.getZ()
-        );
-
-        // Blend localColor and reflectedColor based on reflectivity
+        // Blend local color and reflection based on reflectivity
         // finalColor = (1 - reflectivity) * localColor + reflectivity * reflectedColor
         return new Vector3D(
-            (1 - reflectivity) * localColor.getX() + reflectivity * tintedReflection.getX(),
-            (1 - reflectivity) * localColor.getY() + reflectivity * tintedReflection.getY(),
-            (1 - reflectivity) * localColor.getZ() + reflectivity * tintedReflection.getZ()
+            (1 - reflectivity) * localColor.getX() + reflectivity * finalReflection.getX(),
+            (1 - reflectivity) * localColor.getY() + reflectivity * finalReflection.getY(),
+            (1 - reflectivity) * localColor.getZ() + reflectivity * finalReflection.getZ()
         );
-
-    }  
+    }
     
 
 
     public static void main(String[] args) throws Exception {
 
-        int width  = 4096;
-        int height = 2160;
+        int width  = 4096; // 512
+        int height = 2160; // 270
 
-        // Camera pulled back further to see the larger room
-        Camera camera = new Camera(new Vector3D(0, 2, 10), 70, (double)width / height);
-        camera.setBackgroundColor(new Vector3D(0, 0, 0));
+        Camera camera = new Camera(new Vector3D(0, 8, 45), 60, (double)width / height);
 
         Scene scene = new Scene();
 
-        // -------------------------------------------------------
-        // ROOM — spans X: -14 to 14, Y: -3 to 10, Z: -14 to 10
-        // Larger room gives more breathing room between objects
-        // -------------------------------------------------------
+        Vector3D pavement = new Vector3D(0.76, 0.7, 0.5);
 
-        // Floor (Y = -3) — warm gray
-        Vector3D floorColor = new Vector3D(0.65, 0.62, 0.58);
-        scene.addObject(new Triangle(
-            new Vector3D(-14, -3, -14), new Vector3D( 14, -3, -14), new Vector3D( 14, -3, 10), floorColor));
-        scene.addObject(new Triangle(
-            new Vector3D(-14, -3, -14), new Vector3D( 14, -3,  10), new Vector3D(-14, -3, 10), floorColor));
 
-        // Ceiling (Y = 10) — light gray
-        Vector3D ceilColor = new Vector3D(0.85, 0.85, 0.85);
-        scene.addObject(new Triangle(
-            new Vector3D(-14, 10, -14), new Vector3D( 14, 10, -14), new Vector3D( 14, 10, 10), ceilColor));
-        scene.addObject(new Triangle(
-            new Vector3D(-14, 10, -14), new Vector3D( 14, 10,  10), new Vector3D(-14, 10, 10), ceilColor));
+        // FLOOR
 
-        // Back wall (Z = -14) — off white
-        Vector3D backColor = new Vector3D(0.92, 0.90, 0.85);
-        scene.addObject(new Triangle(
-            new Vector3D(-14, -3, -14), new Vector3D( 14, -3, -14), new Vector3D( 14, 10, -14), backColor));
-        scene.addObject(new Triangle(
-            new Vector3D(-14, -3, -14), new Vector3D( 14, 10, -14), new Vector3D(-14, 10, -14), backColor));
+        Triangle floorT1 = new Triangle(
+            new Vector3D(-80, -3, -30),
+            new Vector3D( 80, -3, -30),
+            new Vector3D( 80, -3,  40),
+            pavement);
 
-        // Left wall (X = -14) — deep red
-        Vector3D leftColor = new Vector3D(0.75, 0.15, 0.15);
-        scene.addObject(new Triangle(
-            new Vector3D(-14, -3, -14), new Vector3D(-14, -3, 10), new Vector3D(-14, 10, 10), leftColor));
-        scene.addObject(new Triangle(
-            new Vector3D(-14, -3, -14), new Vector3D(-14, 10, 10), new Vector3D(-14, 10, -14), leftColor));
+        Triangle floorT2 = new Triangle(
+            new Vector3D(-80, -3, -30),
+            new Vector3D( 80, -3,  40),
+            new Vector3D(-80, -3,  40),
+            pavement);
 
-        // Right wall (X = 14) — deep blue
-        Vector3D rightColor = new Vector3D(0.15, 0.15, 0.75);
-        scene.addObject(new Triangle(
-            new Vector3D(14, -3, -14), new Vector3D(14, 10, -14), new Vector3D(14, 10, 10), rightColor));
-        scene.addObject(new Triangle(
-            new Vector3D(14, -3, -14), new Vector3D(14, 10,  10), new Vector3D(14, -3, 10), rightColor));
+        scene.addObject(floorT1);
+        scene.addObject(floorT2);
 
-        // -------------------------------------------------------
-        // REFLECTIVE SPHERES — pushed apart to use the larger room
-        // -------------------------------------------------------
 
-        // Red metallic — far left
-        Sphere s1 = new Sphere(new Vector3D(-7, 0, -5), 2.0, new Vector3D(1, 0.1, 0.1));
-        s1.setReflectivity(0.8);
-        s1.setShininess(128);
-        s1.setSpecularStrength(0.9);
-        scene.addObject(s1);
+        // MODELS
+        // Run printBounds() first to calibrate Y offset and scale
+        
+        List<Triangle> poly = OBJReader.load("Models/Statue2.obj",
+            new Vector3D(0.4, 0.6, 0.5),
+            new Vector3D(-3, -3, 12),30.0, -90.0);
+        OBJReader.printBounds(poly);
+        poly.forEach(tri -> {
+            tri.setRefractivity(0.0);
+            tri.setShininess(1024);
+            tri.setReflectivity(0.4);
+            //tri.setRefractiveIndex(1);
+            tri.setSpecularStrength(1.0);
+        });
+        poly.forEach(scene::addObject);
+         
 
-        // Blue metallic — far right
-        Sphere s2 = new Sphere(new Vector3D(7, 0, -5), 2.0, new Vector3D(0.1, 0.1, 1));
-        s2.setReflectivity(0.8);
-        s2.setShininess(128);
-        s2.setSpecularStrength(0.9);
-        scene.addObject(s2);
+        List<Triangle> polyb = OBJReader.load("Models/bridge.obj",
+            new Vector3D(0.5, 0.5, 0.5),
+            new Vector3D(0, -8, -18),6.0, 90.0);
+        OBJReader.printBounds(polyb);
+        polyb.forEach( tri -> {
+            tri.setRefractivity(0.0);
+            tri.setShininess(128);
+            tri.setReflectivity(0.4);
+            tri.setSpecularStrength(0.9);
+        });
+        polyb.forEach(scene :: addObject);
 
-        // Perfect mirror — back center elevated
-        Sphere s3 = new Sphere(new Vector3D(0, 4, -10), 2.5, new Vector3D(1, 1, 1));
-        s3.setReflectivity(1.0);
-        s3.setShininess(256);
-        s3.setSpecularStrength(1.0);
-        scene.addObject(s3);
 
-        // Gold — upper left
-        Sphere s4 = new Sphere(new Vector3D(-5, 4, -8), 1.5, new Vector3D(1.0, 0.72, 0.2));
-        s4.setReflectivity(0.7);
-        s4.setShininess(128);
-        s4.setSpecularStrength(0.9);
-        scene.addObject(s4);
+        List<Triangle> poly2 = OBJReader.load("Models/rock.obj",
+            new Vector3D(0.2, 0.2, 0.2),
+            new Vector3D(20, 0, 0),0.004);
+        OBJReader.printBounds(poly2);
+        poly2.forEach( tri -> {
+            tri.setRefractivity(0.0);
+            tri.setShininess(16);
+            tri.setReflectivity(0.0);
+            tri.setSpecularStrength(0.0);
+        });
+        poly2.forEach(scene :: addObject);
 
-        // Cyan glossy — upper right
-        Sphere s5 = new Sphere(new Vector3D(5, 4, -8), 1.5, new Vector3D(0.1, 0.8, 0.8));
-        s5.setReflectivity(0.5);
-        s5.setShininess(96);
-        s5.setSpecularStrength(0.6);
-        scene.addObject(s5);
+        List<Triangle> poly3 = OBJReader.load("Models/Low_Rocks.obj",
+            new Vector3D(1.0, 0.15, 0.15),
+            new Vector3D(6, -3, 18),1.4, 60.0);
+        OBJReader.printBounds(poly3);
+        poly3.forEach( tri -> {
+            tri.setRefractivity(0.9);
+            tri.setShininess(1024);
+            tri.setReflectivity(0.2);
+            tri.setSpecularStrength(1.0);
+            tri.setRefractiveIndex(1.77);
+        });
+        poly3.forEach(scene :: addObject);
 
-        // -------------------------------------------------------
-        // REFRACTIVE SPHERES — spread across the foreground
-        // -------------------------------------------------------
+        List<Triangle> poly4 = OBJReader.load("Models/rock.obj",
+            new Vector3D(0.2, 0.2, 0.2),
+            new Vector3D(-15, -2, 20),0.004);
+        OBJReader.printBounds(poly4);
+        poly4.forEach( tri -> {
+            tri.setRefractivity(0.0);
+            tri.setShininess(216);
+            tri.setReflectivity(0.6);
+            tri.setSpecularStrength(0.4);
+        });
+        poly4.forEach(scene :: addObject);
 
-        // Glass — center
-        Sphere glass = new Sphere(
-            new Vector3D(0, -1, -3), 1.2, new Vector3D(1.0, 1.0, 1.0),
-            128, 0.0, 0.6, 1.0, 1.5
-        );
-        scene.addObject(glass);
+        List<Triangle> poly6 = OBJReader.load("Models/rock.obj",
+            new Vector3D(0.2, 0.2, 0.2),
+            new Vector3D(-45, 0, -10),0.007);
+        OBJReader.printBounds(poly6);
+        poly6.forEach( tri -> {
+            tri.setRefractivity(0.0);
+            tri.setShininess(16);
+            tri.setReflectivity(0.0);
+            tri.setSpecularStrength(0.0);
+        });
+        poly6.forEach(scene :: addObject);
 
-        // Water — left of center
-        Sphere water = new Sphere(
-            new Vector3D(-3, -1, -3), 1.0, new Vector3D(0.6, 0.85, 1.0),
-            64, 0.0, 0.4, 0.9, 1.33
-        );
-        scene.addObject(water);
 
-        // Diamond — right of center
-        Sphere diamond = new Sphere(
-            new Vector3D(3, -1, -3), 1.0, new Vector3D(0.95, 0.95, 1.0),
-            256, 0.0, 0.9, 1.0, 2.4
-        );
-        scene.addObject(diamond);
-
-        // -------------------------------------------------------
-        // TEAPOT — center back, sitting on the floor
-        // -------------------------------------------------------
-        List<Triangle> tea = OBJReader.load("Blinn_Teapot.obj",
-            new Vector3D(0.85, 0.45, 0.75),       // Soft purple-pink
-            new Vector3D(0, -3, -7));              // Centered, on the floor
-        tea.forEach(scene::addObject);
-
-        // -------------------------------------------------------
         // LIGHTS
-        // -------------------------------------------------------
-
-        // Main overhead light — centered and high
+        
         scene.addLight(new PointLight(
-            new Vector3D(0, 9, -4),
+            new Vector3D(30, 0, 40),
             new Vector3D(1.0, 1.0, 1.0),
-            1.5
+            25.0
         ));
 
-        // Front fill light — softens shadows on objects facing camera
         scene.addLight(new PointLight(
-            new Vector3D(0, 4, 8),
+            new Vector3D(-30, 4, 40),
             new Vector3D(1.0, 1.0, 1.0),
-            0.6
+            15.0
         ));
 
-        // Left warm accent — picks up red wall color in reflections
         scene.addLight(new PointLight(
-            new Vector3D(-10, 3, -4),
-            new Vector3D(1.0, 0.6, 0.4),
-            0.7
+            new Vector3D(-25, -2, -25),
+            new Vector3D(1.0, 0.0, 0.0),
+            3.0
         ));
 
-        // Right cool accent — picks up blue wall color in reflections
         scene.addLight(new PointLight(
-            new Vector3D(10, 3, -4),
-            new Vector3D(0.4, 0.6, 1.0),
-            0.7
+            new Vector3D(25, -2, -25),
+            new Vector3D(1.0, 0.0, 0.0),
+            3.0
         ));
 
-        // -------------------------------------------------------
-        // BUILD BVH — must be called after all objects are added
-        // -------------------------------------------------------
+
         scene.buildBVH();
 
-        // Raytracer
         Raytracer raytracer = new Raytracer(scene, camera);
         BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
@@ -511,7 +447,8 @@ public class Raytracer {
             }
         }
 
-        ImageIO.write(image, "png", new File("output.png"));
-        System.out.println("Generated Image: output.png");
+        ImageIO.write(image, "png", new File("Scene3.png"));
+        System.out.println("Generated Image: Scene3.png");
     }
 }
+

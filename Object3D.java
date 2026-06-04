@@ -8,16 +8,18 @@ public abstract class Object3D {
     private double specularStrength;
     private double refractivity;
     private double refractiveIndex;
+    private boolean metallic;
 
     // Constructor
-    public Object3D (Vector3D position, Vector3D color, double shininess, double reflectivity, double specularStrength, double refractivity, double refracrtiveIndex) {
+    public Object3D (Vector3D position, Vector3D color, double shininess, double reflectivity, double specularStrength, double refractivity, double refractiveIndex) {
         this.position = position;
         this.color = color;
         this.shininess = shininess;
         this.reflectivity = reflectivity;
         this.specularStrength = specularStrength;
         this.refractivity = refractivity;
-        this.refractiveIndex = refracrtiveIndex;
+        this.refractiveIndex = refractiveIndex;
+        this.metallic = false;
     }
 
 
@@ -61,5 +63,8 @@ public abstract class Object3D {
 
     // Abstract method to compute intersection with a ray
     public abstract Intersection intersect(Ray ray);
+
+    public boolean isMetallic() { return metallic; }
+    public void setMetallic(boolean metallic) { this.metallic = metallic; }
 
 }

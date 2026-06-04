@@ -80,7 +80,7 @@ public class BVHNode {
             return closest;
         }
 
-        // Internal node — recurse into both children, keep closest hit
+        // Internal node - recurse into both children, keep closest hit
         Intersection leftHit = left.intersect(ray, tMin, tMax);
         Intersection rightHit = right.intersect(ray, tMin, tMax);
 
